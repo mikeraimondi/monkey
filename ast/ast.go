@@ -112,6 +112,26 @@ func (rs *ReturnStatement) String() string {
 	return out.String()
 }
 
+// BlockStatement is a series of statements
+type BlockStatement struct {
+	Token      token.Token
+	Statements []Statement
+}
+
+func (bs *BlockStatement) statementNode() {}
+
+// TokenLiteral is used for debugging
+func (bs *BlockStatement) TokenLiteral() string { return bs.Token.Literal }
+func (bs *BlockStatement) String() string {
+	out := StringBuilder{}
+
+	for _, s := range bs.Statements {
+		out.MustWrite(s.String())
+	}
+
+	return out.String()
+}
+
 // ExpressionStatement is a statement that produces a value
 type ExpressionStatement struct {
 	Token      token.Token // the first token of the expression
@@ -176,6 +196,34 @@ func (ie *InfixExpression) String() string {
 	return out.String()
 }
 
+// IfExpression is an expression with 'if'
+type IfExpression struct {
+	Token       token.Token // the 'if' token
+	Condition   Expression
+	Consequence *BlockStatement
+	Alternative *BlockStatement
+}
+
+func (ie *IfExpression) expressionNode() {}
+
+// TokenLiteral is used for debugging
+func (ie *IfExpression) TokenLiteral() string { return ie.Token.Literal }
+func (ie *IfExpression) String() string {
+	out := StringBuilder{}
+
+	out.MustWrite("if")
+	out.MustWrite(ie.Condition.String())
+	out.MustWrite(" ")
+	out.MustWrite(ie.Consequence.String())
+
+	if ie.Alternative != nil {
+		out.MustWrite("else ")
+		out.MustWrite(ie.Alternative.String())
+	}
+
+	return out.String()
+}
+
 // IntegerLiteral is an integer
 type IntegerLiteral struct {
 	Token token.Token
@@ -187,6 +235,34 @@ func (il *IntegerLiteral) expressionNode() {}
 // TokenLiteral is used for debugging
 func (il *IntegerLiteral) TokenLiteral() string { return il.Token.Literal }
 func (il *IntegerLiteral) String() string       { return il.Token.Literal }
+
+// FunctionLiteral is fn
+type FunctionLiteral struct {
+	Token      token.Token
+	Parameters []*Identifier
+	Body       *BlockStatement
+}
+
+func (fl *FunctionLiteral) expressionNode() {}
+
+// TokenLiteral is used for debugging
+func (fl *FunctionLiteral) TokenLiteral() string { return fl.Token.Literal }
+func (fl *FunctionLiteral) String() string {
+	out := StringBuilder{}
+
+	params := []string{}
+	for _, p := range fl.Parameters {
+		params = append(params, p.String())
+	}
+
+	out.MustWrite(fl.TokenLiteral())
+	out.MustWrite("(")
+	out.MustWrite(strings.Join(params, ", "))
+	out.MustWrite(")")
+	out.MustWrite(fl.Body.String())
+
+	return out.String()
+}
 
 // Boolean is a bool
 type Boolean struct {
