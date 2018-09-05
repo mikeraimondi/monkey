@@ -224,6 +224,33 @@ func (ie *IfExpression) String() string {
 	return out.String()
 }
 
+// CallExpression is a function invocation
+type CallExpression struct {
+	Token     token.Token // The '(' token
+	Function  Expression
+	Arguments []Expression
+}
+
+func (ce *CallExpression) expressionNode() {}
+
+// TokenLiteral is used for debugging
+func (ce *CallExpression) TokenLiteral() string { return ce.Token.Literal }
+func (ce *CallExpression) String() string {
+	out := StringBuilder{}
+
+	args := []string{}
+	for _, a := range ce.Arguments {
+		args = append(args, a.String())
+	}
+
+	out.MustWrite(ce.Function.String())
+	out.MustWrite("(")
+	out.MustWrite(strings.Join(args, ", "))
+	out.MustWrite(")")
+
+	return out.String()
+}
+
 // IntegerLiteral is an integer
 type IntegerLiteral struct {
 	Token token.Token
