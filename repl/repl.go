@@ -6,6 +6,7 @@ import (
 	"io"
 	"log"
 
+	"github.com/mikeraimondi/monkey/evaluator"
 	"github.com/mikeraimondi/monkey/lexer"
 	"github.com/mikeraimondi/monkey/parser"
 )
@@ -32,8 +33,11 @@ func Start(in io.Reader, out io.Writer) {
 			continue
 		}
 
-		if _, err := io.WriteString(out, program.String()+"\n"); err != nil {
-			log.Fatalln(err)
+		evaluated := evaluator.Eval(program)
+		if evaluated != nil {
+			if _, err := io.WriteString(out, evaluated.Inspect()+"\n"); err != nil {
+				log.Fatalln(err)
+			}
 		}
 	}
 }
