@@ -134,33 +134,32 @@ func (l *Lexer) readNumber() string {
 
 func (l *Lexer) readString() (s string, err error) {
 	result := strings.Builder{}
-	escaped := false
+Outer:
 	for {
 		l.readChar()
-		if l.ch == 0 {
+		switch l.ch {
+		case 0:
 			err = errors.New("unexpected end-of-file")
-			break
-		} else if escaped {
-			if l.ch == byte('"') {
-				result.WriteByte(l.ch)
-			} else if l.ch == byte('n') {
-				result.WriteByte(byte('\n'))
-			} else if l.ch == byte('t') {
-				result.WriteByte(byte('\t'))
-			} else {
+			break Outer
+		case '\\':
+			switch ch := l.peekChar(); ch {
+			case '"':
+				result.WriteByte(ch)
+			case 'n':
+				result.WriteByte('\n')
+			case 't':
+				result.WriteByte('\t')
+			default:
 				err = errors.New("unknown escape sequence")
-				break
+				break Outer
 			}
-			escaped = false
-		} else if l.ch == byte('"') {
-			break
-		} else if l.ch == byte('\\') {
-			escaped = true
-		} else {
+			l.readChar()
+		case '"':
+			break Outer
+		default:
 			if err = result.WriteByte(l.ch); err != nil {
-				break
+				break Outer
 			}
-			escaped = false
 		}
 	}
 	return result.String(), err
