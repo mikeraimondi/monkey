@@ -27,6 +27,12 @@ if (5 < 10) {
 
 10 == 10;
 10 != 9;
+"foobar"
+"foo bar"
+"foo\"bar"
+"hello \"world\""
+"hello\n world"
+"hello\t\t\tworld"
 `
 	tests := []struct {
 		expectedType    token.TokenType
@@ -105,6 +111,12 @@ if (5 < 10) {
 		{token.NOT_EQ, "!="},
 		{token.INT, "9"},
 		{token.SEMICOLON, ";"},
+		{token.STRING, "foobar"},
+		{token.STRING, "foo bar"},
+		{token.STRING, "foo\"bar"},
+		{token.STRING, "hello \"world\""},
+		{token.STRING, "hello\n world"},
+		{token.STRING, "hello\t\t\tworld"},
 		{token.EOF, ""},
 	}
 
@@ -112,7 +124,7 @@ if (5 < 10) {
 
 	// TODO parallelize
 	for _, tt := range tests {
-		t.Run(fmt.Sprintf("tokentype %s", tt.expectedType), func(t *testing.T) {
+		t.Run(fmt.Sprintf("tokentype %s,literal %s", tt.expectedType, tt.expectedLiteral), func(t *testing.T) {
 			tok := l.NextToken()
 
 			if tok.Type != tt.expectedType {

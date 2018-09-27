@@ -1,6 +1,11 @@
 package lexer
 
-import "github.com/mikeraimondi/monkey/token"
+import (
+	"errors"
+	"strings"
+
+	"github.com/mikeraimondi/monkey/token"
+)
 
 // Lexer reads a string and tokenizes it
 type Lexer struct {
@@ -66,6 +71,14 @@ func (l *Lexer) NextToken() token.Token {
 		tok = newToken(token.LBRACE, l.ch)
 	case '}':
 		tok = newToken(token.RBRACE, l.ch)
+	case '"':
+		lit, err := l.readString()
+		tok.Literal = lit
+		if err != nil {
+			tok.Type = token.ILLEGAL
+		} else {
+			tok.Type = token.STRING
+		}
 	case 0:
 		tok.Literal = ""
 		tok.Type = token.EOF
@@ -117,6 +130,40 @@ func (l *Lexer) readNumber() string {
 		l.readChar()
 	}
 	return l.input[position:l.position]
+}
+
+func (l *Lexer) readString() (s string, err error) {
+	result := strings.Builder{}
+	escaped := false
+	for {
+		l.readChar()
+		if l.ch == 0 {
+			err = errors.New("unexpected end-of-file")
+			break
+		} else if escaped {
+			if l.ch == byte('"') {
+				result.WriteByte(l.ch)
+			} else if l.ch == byte('n') {
+				result.WriteByte(byte('\n'))
+			} else if l.ch == byte('t') {
+				result.WriteByte(byte('\t'))
+			} else {
+				err = errors.New("unknown escape sequence")
+				break
+			}
+			escaped = false
+		} else if l.ch == byte('"') {
+			break
+		} else if l.ch == byte('\\') {
+			escaped = true
+		} else {
+			if err = result.WriteByte(l.ch); err != nil {
+				break
+			}
+			escaped = false
+		}
+	}
+	return result.String(), err
 }
 
 func (l *Lexer) skipWhitespace() {
