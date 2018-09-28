@@ -291,6 +291,18 @@ func (fl *FunctionLiteral) String() string {
 	return out.String()
 }
 
+// StringLiteral is a string
+type StringLiteral struct {
+	Token token.Token
+	Value string
+}
+
+func (sl *StringLiteral) expressionNode() {}
+
+// TokenLiteral is used for debugging
+func (sl *StringLiteral) TokenLiteral() string { return sl.Token.Literal }
+func (sl *StringLiteral) String() string       { return sl.Token.Literal }
+
 // Boolean is a bool
 type Boolean struct {
 	Token token.Token
