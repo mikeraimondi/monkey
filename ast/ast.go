@@ -303,6 +303,54 @@ func (sl *StringLiteral) expressionNode() {}
 func (sl *StringLiteral) TokenLiteral() string { return sl.Token.Literal }
 func (sl *StringLiteral) String() string       { return sl.Token.Literal }
 
+// ArrayLiteral is an array
+type ArrayLiteral struct {
+	Token    token.Token
+	Elements []Expression
+}
+
+func (al *ArrayLiteral) expressionNode() {}
+
+// TokenLiteral is used for debugging
+func (al *ArrayLiteral) TokenLiteral() string { return al.Token.Literal }
+func (al *ArrayLiteral) String() string {
+	out := StringBuilder{}
+
+	elements := []string{}
+	for _, e := range al.Elements {
+		elements = append(elements, e.String())
+	}
+
+	out.MustWrite("[")
+	out.MustWrite(strings.Join(elements, ", "))
+	out.MustWrite("]")
+
+	return out.String()
+}
+
+// IndexExpression indexes into an array
+type IndexExpression struct {
+	Token token.Token // the [ token
+	Left  Expression
+	Index Expression
+}
+
+func (ie *IndexExpression) expressionNode() {}
+
+// TokenLiteral is used for debugging
+func (ie *IndexExpression) TokenLiteral() string { return ie.Token.Literal }
+func (ie *IndexExpression) String() string {
+	out := StringBuilder{}
+
+	out.MustWrite("(")
+	out.MustWrite(ie.Left.String())
+	out.MustWrite("[")
+	out.MustWrite(ie.Index.String())
+	out.MustWrite("])")
+
+	return out.String()
+}
+
 // Boolean is a bool
 type Boolean struct {
 	Token token.Token
