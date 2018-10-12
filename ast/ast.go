@@ -328,6 +328,31 @@ func (al *ArrayLiteral) String() string {
 	return out.String()
 }
 
+// HashLiteral is a hashmap
+type HashLiteral struct {
+	Token token.Token
+	Pairs map[Expression]Expression
+}
+
+func (hl *HashLiteral) expressionNode() {}
+
+// TokenLiteral is used for debugging
+func (hl *HashLiteral) TokenLiteral() string { return hl.Token.Literal }
+func (hl *HashLiteral) String() string {
+	out := StringBuilder{}
+
+	pairs := []string{}
+	for k, v := range hl.Pairs {
+		pairs = append(pairs, k.String()+":"+v.String())
+	}
+
+	out.MustWrite("{")
+	out.MustWrite(strings.Join(pairs, ", "))
+	out.MustWrite("}")
+
+	return out.String()
+}
+
 // IndexExpression indexes into an array
 type IndexExpression struct {
 	Token token.Token // the [ token
