@@ -24,6 +24,7 @@ const (
 	ARRAY_OBJ        = "ARRAY"
 	HASH_OBJ         = "HASH"
 	QUOTE_OBJ        = "QUOTE"
+	MACRO_OBJ        = "MACRO"
 )
 
 type Object interface {
@@ -204,4 +205,29 @@ type Quote struct {
 func (q *Quote) Type() ObjectType { return QUOTE_OBJ }
 func (q *Quote) Inspect() string {
 	return "QUOTE(" + q.Node.String() + ")"
+}
+
+type Macro struct {
+	Parameters []*ast.Identifier
+	Body       *ast.BlockStatement
+	Env        *Environment
+}
+
+func (m *Macro) Type() ObjectType { return MACRO_OBJ }
+func (m *Macro) Inspect() string {
+	out := ast.StringBuilder{}
+
+	params := []string{}
+	for _, p := range m.Parameters {
+		params = append(params, p.String())
+	}
+
+	out.MustWrite("macro")
+	out.MustWrite("(")
+	out.MustWrite(strings.Join(params, ", "))
+	out.MustWrite(") {\n")
+	out.MustWrite(m.Body.String())
+	out.MustWrite("\n}")
+
+	return out.String()
 }

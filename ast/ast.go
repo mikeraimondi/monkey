@@ -388,6 +388,34 @@ func (b *Boolean) expressionNode() {}
 func (b *Boolean) TokenLiteral() string { return b.Token.Literal }
 func (b *Boolean) String() string       { return b.Token.Literal }
 
+// MacroLiteral is a macro
+type MacroLiteral struct {
+	Token      token.Token
+	Parameters []*Identifier
+	Body       *BlockStatement
+}
+
+func (m *MacroLiteral) expressionNode() {}
+
+// TokenLiteral is used for debugging
+func (m *MacroLiteral) TokenLiteral() string { return m.Token.Literal }
+func (m *MacroLiteral) String() string {
+	out := StringBuilder{}
+
+	params := []string{}
+	for _, p := range m.Parameters {
+		params = append(params, p.String())
+	}
+
+	out.MustWrite(m.TokenLiteral())
+	out.MustWrite("(")
+	out.MustWrite(strings.Join(params, ", "))
+	out.MustWrite(")")
+	out.MustWrite(m.Body.String())
+
+	return out.String()
+}
+
 // StringBuilder is a convenience wrapper around strings.Builder
 type StringBuilder struct {
 	strings.Builder
