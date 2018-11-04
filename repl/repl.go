@@ -6,7 +6,9 @@ import (
 	"io"
 	"log"
 
+	"github.com/mikeraimondi/monkey/compiler"
 	"github.com/mikeraimondi/monkey/object"
+	"github.com/mikeraimondi/monkey/vm"
 
 	"github.com/mikeraimondi/monkey/evaluator"
 	"github.com/mikeraimondi/monkey/lexer"
@@ -17,7 +19,6 @@ const PROMPT = ">> "
 
 func Start(in io.Reader, out io.Writer) {
 	scanner := bufio.NewScanner(in)
-	env := object.NewEnvironment()
 	macroEnv := object.NewEnvironment()
 
 	for {
@@ -40,12 +41,22 @@ func Start(in io.Reader, out io.Writer) {
 		evaluator.DefineMacros(program, macroEnv)
 		expanded := evaluator.ExpandMacros(program, macroEnv)
 
-		evaluated := evaluator.Eval(expanded, env)
-		if evaluated != nil {
-			if _, err := io.WriteString(out, evaluated.Inspect()+"\n"); err != nil {
-				log.Fatalln(err)
-			}
+		comp := compiler.New()
+		err := comp.Compile(expanded)
+		if err != nil {
+			fmt.Fprintf(out, "compilation failure:\n %s\n", err)
+			continue
 		}
+
+		machine := vm.New(comp.Bytecode())
+		err = machine.Run()
+		if err != nil {
+			fmt.Fprintf(out, "bytecode execution failure:\n %s\n", err)
+			continue
+		}
+
+		stackTop := machine.StackTop()
+		fmt.Fprintf(out, "%s\n", stackTop.Inspect())
 	}
 }
 
