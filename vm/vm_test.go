@@ -20,23 +20,25 @@ func runVmTests(t *testing.T, tests []vmTestCase) {
 	t.Helper()
 
 	for _, tt := range tests {
-		program := parse(tt.input)
+		t.Run(tt.input, func(t *testing.T) {
+			program := parse(tt.input)
 
-		comp := compiler.New()
-		err := comp.Compile(program)
-		if err != nil {
-			t.Fatalf("compiler error: %s", err)
-		}
+			comp := compiler.New()
+			err := comp.Compile(program)
+			if err != nil {
+				t.Fatalf("compiler error: %s", err)
+			}
 
-		vm := New(comp.Bytecode())
-		err = vm.Run()
-		if err != nil {
-			t.Fatalf("vm error: %s", err)
-		}
+			vm := New(comp.Bytecode())
+			err = vm.Run()
+			if err != nil {
+				t.Fatalf("vm error: %s", err)
+			}
 
-		stackElem := vm.StackTop()
+			stackElem := vm.LastPoppedStackElem()
 
-		testExpectedObject(t, tt.expected, stackElem)
+			testExpectedObject(t, tt.expected, stackElem)
+		})
 	}
 }
 

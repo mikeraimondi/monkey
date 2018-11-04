@@ -55,8 +55,8 @@ func Start(in io.Reader, out io.Writer) {
 			continue
 		}
 
-		stackTop := machine.StackTop()
-		fmt.Fprintf(out, "%s\n", stackTop.Inspect())
+		lastPopped := machine.LastPoppedStackElem()
+		fmt.Fprintf(out, "%s\n", lastPopped.Inspect())
 	}
 }
 
