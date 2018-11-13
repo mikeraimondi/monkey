@@ -7,19 +7,22 @@ import (
 	"log"
 
 	"github.com/mikeraimondi/monkey/compiler"
-	"github.com/mikeraimondi/monkey/object"
-	"github.com/mikeraimondi/monkey/vm"
-
 	"github.com/mikeraimondi/monkey/evaluator"
 	"github.com/mikeraimondi/monkey/lexer"
+	"github.com/mikeraimondi/monkey/object"
 	"github.com/mikeraimondi/monkey/parser"
+	"github.com/mikeraimondi/monkey/vm"
 )
 
 const PROMPT = ">> "
 
 func Start(in io.Reader, out io.Writer) {
 	scanner := bufio.NewScanner(in)
+
 	macroEnv := object.NewEnvironment()
+	constants := []object.Object{}
+	globals := make([]object.Object, vm.GlobalsSize)
+	symbolTable := compiler.NewSymbolTable()
 
 	for {
 		fmt.Printf(PROMPT)
@@ -41,14 +44,14 @@ func Start(in io.Reader, out io.Writer) {
 		evaluator.DefineMacros(program, macroEnv)
 		expanded := evaluator.ExpandMacros(program, macroEnv)
 
-		comp := compiler.New()
+		comp := compiler.NewWithState(symbolTable, constants)
 		err := comp.Compile(expanded)
 		if err != nil {
 			fmt.Fprintf(out, "compilation failure:\n %s\n", err)
 			continue
 		}
 
-		machine := vm.New(comp.Bytecode())
+		machine := vm.NewWithGlobalsStore(comp.Bytecode(), globals)
 		err = machine.Run()
 		if err != nil {
 			fmt.Fprintf(out, "bytecode execution failure:\n %s\n", err)
